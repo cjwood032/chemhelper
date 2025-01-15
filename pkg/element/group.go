@@ -1,4 +1,4 @@
-package models
+package element
 
 type Group int
 const (

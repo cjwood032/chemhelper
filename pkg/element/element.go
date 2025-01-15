@@ -1,4 +1,4 @@
-package models
+package element
 
 type Element struct {
 	AtomicNumber    int     // Atomic number of the element
@@ -14,8 +14,6 @@ type Element struct {
 type PeriodicTable struct {
 	Elements []Element
 }
-
-type Elements []Element;
 
 func NewPeriodicTable() *PeriodicTable {
     elements := []Element{
@@ -140,3 +138,13 @@ func NewPeriodicTable() *PeriodicTable {
     }
     return &PeriodicTable{Elements:elements}
 }
+func (pt *PeriodicTable) FindElementBySymbol(symbol string) (*Element, bool) {
+	for _, elem := range pt.Elements {
+		if elem.Symbol == symbol {
+			return &elem, true
+		}
+	}
+	return nil, false //if the passed symbol isn't in the correct format it won't be found 
+}
+
+
