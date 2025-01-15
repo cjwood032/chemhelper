@@ -29,26 +29,22 @@ func TestNewPeriodicTableSize(t *testing.T){
 //We test the main organic elements since they are the most used, and most important
 func TestNewPeriodicTableElements(t *testing.T){
 	pd := NewPeriodicTable()
-	expectedHydrogenValues :=  newTestElement(1, "H", "Hydrogen", 1.008, 2.20, 120.0, 1, 1)
-	actualHydrogenValues := pd.Elements[0]
-	expectedCarbonValues := newTestElement(6, "C", "Carbon", 12.011, 2.55, 170.0, 14, 2)
-	actualCarbonValues := pd.Elements[5]
-	expectedNitrogenValues := newTestElement(7, "N", "Nitrogen", 14.007, 3.04, 155.0, 15, 2)
-	actualNitrogenValues := pd.Elements[6]
-	expectedOxygenValues := newTestElement(8, "O", "Oxygen", 15.999, 3.44, 152.0, 16, 2)
-	actualOxygenValues := pd.Elements[7]
-	if  actualHydrogenValues != expectedHydrogenValues {
-		ThrowElementError(t, expectedHydrogenValues, actualHydrogenValues)
+	expectedElements := []struct {
+		index   int
+		element Element
+	}{
+		{0, newTestElement(1, "H", "Hydrogen", 1.008, 2.20, 120.0, 1, 1)},
+		{5, newTestElement(6, "C", "Carbon", 12.011, 2.55, 170.0, 14, 2)},
+		{6, newTestElement(7, "N", "Nitrogen", 14.007, 3.04, 155.0, 15, 2)},
+		{7, newTestElement(8, "O", "Oxygen", 15.999, 3.44, 152.0, 16, 2)},
 	}
-	if  expectedCarbonValues != actualCarbonValues {
-		ThrowElementError(t, expectedCarbonValues, actualCarbonValues)
+
+	// Iterate over expected elements and compare
+	for _, e := range expectedElements {
+		actual := pd.Elements[e.index]
+		checkElement(t, e.element, actual)
 	}
-	if  expectedNitrogenValues != actualNitrogenValues {
-		ThrowElementError(t, expectedNitrogenValues, actualNitrogenValues)
-	}
-	if  expectedOxygenValues != actualOxygenValues {
-		ThrowElementError(t, expectedOxygenValues, actualOxygenValues)
-	}
+
 }
 func TestFindElementBySymbol(t *testing.T){
 	pd := NewPeriodicTable()
@@ -57,17 +53,13 @@ func TestFindElementBySymbol(t *testing.T){
 	if actual == nil || !found {
 		t.Errorf("Expected to find %s in the periodic table ", expected.Name)
 	}
-	if expected != *actual{
-		ThrowElementError(t, expected, *actual)
-	}
+	checkElement(t, expected, *actual)
 	expected = newTestElement(27, "Co", "Cobalt", 58.933194, 1.88, 152.0, 9, 4)
 	actual, found = pd.FindElementBySymbol(expected.Symbol)
 	if actual == nil || !found {
 		t.Errorf("Expected to find %s in the periodic table ", expected.Name)
 	}
-	if expected != *actual {
-		ThrowElementError(t, expected, *actual)
-	}
+	checkElement(t, expected, *actual)
 	for _, expectedSymbol := range elementSymbols {
 		_, found = pd.FindElementBySymbol(expectedSymbol)
 		if !found {
@@ -84,6 +76,8 @@ func TestFindElementBySymbol(t *testing.T){
 func newTestElement(number int, symbol string, name string, weight float64, en float64, radius float64, group int, period int, ) Element{
 	return Element{AtomicNumber: number, Symbol: symbol, Name: name, AtomicWeight: weight, Electronegativity: en, VanDerWaalsRadius: radius, Group: group, Period: period}
 }
-func ThrowElementError(t *testing.T, expected Element, actual Element,) {
-	t.Errorf("Expected %s to equal %v, but got %v", expected.Name, expected, actual)
+func checkElement(t *testing.T, expected Element, actual Element,) {
+	if actual != expected {
+		t.Errorf("Expected %s to equal %v, but got %v", expected.Name, expected, actual)
+	}
 }

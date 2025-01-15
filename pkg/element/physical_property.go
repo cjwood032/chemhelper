@@ -1,41 +1,79 @@
 package element
 
-//the iota is equal to the conversion to grams
-type MassUnit float64
-const (
-gram MassUnit = 1
-ounce MassUnit = 28.349
-pound MassUnit = 453.592
-kilogram MassUnit = 1000
-hectogram MassUnit = 100
-dekagram MassUnit = 10
-decigram MassUnit = 1/10
-centigram MassUnit = 1/100
-milligram MassUnit = 1/1000
-)
-type VolumeUnit float64
-const (
-	liter VolumeUnit = 1
-	deciliter VolumeUnit = 1/10
-	centiliter VolumeUnit = 1/100
-	milliliter VolumeUnit = 1/1000
 
+type MetricPrefix float64
+
+const (
+	none MetricPrefix = 1
+	kilo MetricPrefix = 1000
+	hecto MetricPrefix = 100
+	deca MetricPrefix = 10
+	deci MetricPrefix = 0.1
+	centi MetricPrefix = 0.01
+	milli MetricPrefix = 0.001
+	micro MetricPrefix = 0.000001
+	nano MetricPrefix = 0.000000001
+)
+type MassUnit string
+
+const (
+	// Metric
+	gram    MassUnit = "gram"
+	// Imperial
+	ounce   MassUnit = "ounce"
+	pound   MassUnit = "pound"
 )
 
-type Mass struct{
+type Mass struct {
 	value float64
-	unit MassUnit 
+	unit  MassUnit
+	prefix MetricPrefix
 }
+
 
 type Volume struct {
 	value float64
-	unit VolumeUnit 
-}
-//grams is the standard
-func convertMassToGrams (m Mass) Mass{
-	return Mass{value: m.value * float64(m.unit)}
+	unit  MetricPrefix // e.g., centi, milli
 }
 
-func convertVolumeToLiters (v Volume) Volume{
-	return Volume{value: v.value * float64(v.unit)}
+type Convertible interface {
+	convertToStandard() float64
+}
+
+func (m Mass) convertToStandard() float64 {	
+	switch m.unit {
+	case pound:
+		return m.value * 453.592
+	case ounce:
+		return m.value * 28.349
+	default:
+		// Handle metric units with the prefix
+		return m.value * float64(m.prefix) // Convert to grams by applying the metric prefix
+	}
+}
+
+func (v Volume) convertToStandard() float64 {
+	// Convert volume to liters by applying the metric prefix
+	return v.value * float64(v.unit)
+}
+
+func convertMassToGrams(m Mass) float64 {
+	return m.convertToStandard()
+}
+
+func convertVolumeToLiters(v Volume) float64 {
+	return v.convertToStandard()
+}
+
+func convertToStandardValue(c Convertible) float64 {
+	return c.convertToStandard()
+}
+
+
+func (element *Element) getMolesFromMass(mass Mass) (moles float64){
+	return convertMassToGrams(mass) / element.AtomicWeight 
+}
+
+func getMolesFromVolume(volume Volume, molarity float64) (moles float64){
+	return convertVolumeToLiters(volume) * molarity
 }
