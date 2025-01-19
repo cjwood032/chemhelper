@@ -1,23 +1,24 @@
 package element
 
 
-type MetricPrefix float64
+type Prefix float64
 
 const (
-	none MetricPrefix = 1
-	kilo MetricPrefix = 1000
-	hecto MetricPrefix = 100
-	deca MetricPrefix = 10
-	deci MetricPrefix = 0.1
-	centi MetricPrefix = 0.01
-	milli MetricPrefix = 0.001
-	micro MetricPrefix = 0.000001
-	nano MetricPrefix = 0.000000001
+	none Prefix = 1
+	kilo Prefix = 1000
+	hecto Prefix = 100
+	deca Prefix = 10
+	deci Prefix = 0.1
+	centi Prefix = 0.01
+	milli Prefix = 0.001
+	micro Prefix = 0.000001
 )
 type MassUnit string
 
 const (
-	// Metric
+	// Catch for things like Ton, and Slug
+	unknown MassUnit = "unknown"
+	//Metric
 	gram    MassUnit = "gram"
 	// Imperial
 	ounce   MassUnit = "ounce"
@@ -27,53 +28,42 @@ const (
 type Mass struct {
 	value float64
 	unit  MassUnit
-	prefix MetricPrefix
+	prefix Prefix
 }
 
 
 type Volume struct {
 	value float64
-	unit  MetricPrefix // e.g., centi, milli
+	unit  Prefix 
 }
 
-type Convertible interface {
+type Property interface {
 	convertToStandard() float64
 }
 
 func (m Mass) convertToStandard() float64 {	
+	
 	switch m.unit {
 	case pound:
-		return m.value * 453.592
+		return m.value * 453.592 * float64(m.prefix)
 	case ounce:
-		return m.value * 28.349
+		return m.value * 28.349 * float64(m.prefix)
 	default:
-		// Handle metric units with the prefix
-		return m.value * float64(m.prefix) // Convert to grams by applying the metric prefix
+		return m.value * float64(m.prefix)
 	}
 }
 
 func (v Volume) convertToStandard() float64 {
-	// Convert volume to liters by applying the metric prefix
 	return v.value * float64(v.unit)
 }
-
-func convertMassToGrams(m Mass) float64 {
-	return m.convertToStandard()
+func convertToStandardValue(p Property) float64 {
+	
+    return p.convertToStandard()
 }
-
-func convertVolumeToLiters(v Volume) float64 {
-	return v.convertToStandard()
-}
-
-func convertToStandardValue(c Convertible) float64 {
-	return c.convertToStandard()
-}
-
-
 func (element *Element) getMolesFromMass(mass Mass) (moles float64){
-	return convertMassToGrams(mass) / element.AtomicWeight 
+	return mass.convertToStandard() / element.AtomicWeight 
 }
 
 func getMolesFromVolume(volume Volume, molarity float64) (moles float64){
-	return convertVolumeToLiters(volume) * molarity
+	return volume.convertToStandard() * molarity
 }
