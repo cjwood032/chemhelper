@@ -3,10 +3,11 @@ package element
 import (
 	"fmt"
 	"regexp"
+	"sort"
 	"strconv"
 )
 
-type ElementMoles struct { // when creating compounds 
+type ElementMoles struct { // when creating compounds. I could just have moles be part of the element struct, but this is less confusing when balancing equations.
 	Element Element
 	Moles float64
 }
@@ -16,11 +17,18 @@ type Compound struct {
 	Elements []ElementMoles
 	Mass Mass
 	Volume Volume
+	MolarMass float64
+	Moles float64
 }
-
-func ParseCompound(compound string, pt *PeriodicTable) ([]ElementMoles, error) {
+// Orders by symbol
+func sortElementMoles(elements []ElementMoles) {
+	sort.Slice(elements, func(i, j int) bool {
+		return elements[i].Element.Symbol < elements[j].Element.Symbol
+	})
+}
+func ParseCompoundElements(compound string, pt *PeriodicTable) ([]ElementMoles, error) {
 	if compound =="" {
-		return nil, fmt.Errorf("No compound symbols passed")
+		return nil, fmt.Errorf("no compound symbols passed")
 	}
 	var elements []ElementMoles
 	re := regexp.MustCompile(`([A-Z][a-z]?)(\d*)`)
@@ -51,10 +59,4 @@ func ParseCompound(compound string, pt *PeriodicTable) ([]ElementMoles, error) {
 	}
 	return elements, nil
 }
-func (c Compound) MolarMass() float64 {
-	totalMass := 0.0
-	for _, em := range c.Elements {
-		totalMass += em.Element.AtomicWeight * em.Moles
-	}
-	return totalMass
-}
+

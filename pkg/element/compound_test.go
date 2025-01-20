@@ -2,11 +2,10 @@ package element
 
 import (
 	"fmt"
-	"sort"
 	"testing"
 )
 
-// Simplified PeriodicTable with only a few elements for testing.
+// Simplified Periodic Table with only a few elements for testing.
 func NewTestPeriodicTable() *PeriodicTable {
 	return &PeriodicTable{
 		Elements: []Element{
@@ -75,19 +74,14 @@ var testCompounds = []struct { // Mass is the atomic mass
 		expectedError: true,
 	},
 }
-// Orders by symbol
-func sortElementMoles(elements []ElementMoles) {
-	sort.Slice(elements, func(i, j int) bool {
-		return elements[i].Element.Symbol < elements[j].Element.Symbol
-	})
-}
+
 
 func TestParseCompound(t *testing.T) {
 	pt := NewTestPeriodicTable()
 
 	for _, test := range testCompounds {
 		t.Run(fmt.Sprintf("Testing Compound:%s", test.compound.Symbol), func(t *testing.T) {
-			result, err := ParseCompound(test.compound.Symbol, pt)
+			result, err := ParseCompoundElements(test.compound.Symbol, pt)
 			if (err != nil) != test.expectedError {
 				t.Errorf("Expected error: %v, but got: %v", test.expectedError, err)
 			}
@@ -117,9 +111,16 @@ func TestMolarMass(t *testing.T) {
 	for _, test := range testCompounds {
 		t.Run(fmt.Sprintf("Testing Compound:%s", test.compound.Symbol), func(t *testing.T) {
 			expected := test.compound.Mass.value
-			actual := test.compound.MolarMass()
+			err := test.compound.getMolarMass()
+			if !test.expectedError && err!=nil {
+				t.Errorf("unexpected error")
+			}
+			actual := test.compound.MolarMass
 			if (actual != expected){
 				t.Errorf("Expected %v mass, but got %v", expected, actual)
+			}
+			if (test.expectedError && err == nil) {
+				t.Errorf("Expected error but got none")
 			}
 		})
 	}

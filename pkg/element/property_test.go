@@ -55,7 +55,7 @@ func TestConvertMassToStandard(t *testing.T) {
 		{
 			name:           "Invalid unit (unknown)",
 			value:          2,
-			unit:           unknown,
+			unit:           unknownMass,
 			prefix:         none,
 			expectedResult: 2,
 			expectedError:  true,
@@ -64,7 +64,10 @@ func TestConvertMassToStandard(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			m := Mass{value: test.value, unit: test.unit, prefix: test.prefix}
-			result := m.convertToStandard()
+			result, err := convertToStandardValue(m)
+			if !test.expectedError && err !=nil  {
+				t.Errorf("Unexpected error for %s: %s", test.name, err)
+			}
 			if test.expectedError && result == test.expectedResult {
 				t.Errorf("Expected error for %s but got %f", test.name, result)
 			}
@@ -95,7 +98,10 @@ func TestConvertVolume(t *testing.T) {
 	for _, test := range volumeTests {
 		t.Run(test.name, func(t *testing.T) {
 			v := Volume{value: test.value, unit: test.prefix}
-			result := v.convertToStandard()
+			result, err := convertToStandardValue(v)
+			if !test.expectedError && err !=nil  {
+				t.Errorf("Unexpected error for %s: %s", test.name, err)
+			}
 			if test.expectedError && result == test.expectedResult {
 				t.Errorf("Expected error for %s but got %f", test.name, result)
 			}
