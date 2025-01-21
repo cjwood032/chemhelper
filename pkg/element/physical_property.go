@@ -3,13 +3,13 @@ package element
 import (
 	"fmt"
 	"log"
+	"math"
 )
 
 
 type Prefix float64
 
 const (
-	unknownPrefix Prefix = 0
 	none Prefix = 1
 	kilo Prefix = 1000
 	hecto Prefix = 100
@@ -45,7 +45,7 @@ type Volume struct {
 
 type Property interface {
 	convertToStandard() (float64, error)
-	getMoles(float64) float64
+	getMoles(float64) (float64, error)
 }
 
 func convertToStandardValue(p Property) (float64, error) {
@@ -67,27 +67,72 @@ func (m Mass) convertToStandard() (float64, error) {
 	}
 }
 
+func NewMass(value float64, options ...interface{}) (Mass, error) {
+	if value == 0 {
+		return Mass{}, fmt.Errorf("no mass value passed")
+	}
+	mass := Mass{
+		value:  value,
+		unit:   gram, 
+		prefix: none, 
+	}
+
+	for _, opt := range options {
+		switch v := opt.(type) {
+		case MassUnit:
+			mass.unit = v
+		case Prefix:
+			mass.prefix = v
+		default:
+			log.Printf("%v is unexpected", v)
+		}
+	}
+
+	return mass, nil
+}
+
+
 func (v Volume) convertToStandard() (float64, error) {
-	
 	return v.value * float64(v.unit), nil
 }
 
-func getMoles(p Property, value float64) {
-	p.getMoles(value)
+func getMoles(p Property, value float64) (float64, error){
+	return p.getMoles(value)
 }
-func (m Mass) getMoles(molarMass float64) float64 {
+func (m Mass) getMoles(molarMass float64) (float64,error) {
 	standardMass, err := m.convertToStandard()
-	handleError(err)
-	return standardMass / molarMass
+	if err != nil {
+		return 0, err
+	}
+	return standardMass / molarMass, nil
 }
-func (v Volume) getMoles(molarity float64) float64 {
+func (c *Compound) getMoles(mass float64) ( error) {
+	if mass ==0 {
+		return fmt.Errorf("no mass passed")
+	}
+	if c.MolarMass == 0 {
+		err := c.getMolarMass()
+		if (err != nil) {
+			return err
+		}	
+	}
+	c.Moles = mass/c.MolarMass
+	return nil
+}
+func (v Volume) getMoles(molarity float64) (float64, error) {
 	standardVol, err := v.convertToStandard()
 	handleError(err)
-	return standardVol * molarity
+	return standardVol * molarity, err
 }
 
-func (element *ElementMoles) getMoles(mass Mass) {
-	element.Moles = mass.getMoles(element.Element.AtomicWeight)
+func (element *ElementMoles) getMoles(mass Mass) error {
+	
+	moles, err := mass.getMoles(element.Element.AtomicWeight)
+	if err != nil {
+		return err
+	} 
+	element.Moles = moles
+	return nil
 }
 
 func (compound *Compound) getMolesFromMass(mass Mass) error {
@@ -97,7 +142,11 @@ func (compound *Compound) getMolesFromMass(mass Mass) error {
 			return err
 		}	
 	}
-	compound.Moles = mass.getMoles(compound.MolarMass)
+	moles, err := mass.getMoles(compound.MolarMass)
+	if (err != nil) {
+		return err
+	}	
+	compound.Moles = moles
 	return nil
 }
 
@@ -114,7 +163,13 @@ func (compound *Compound) getMolarMass() error {
 }
 
 func handleError(err error) {
+	//I don't really do anything with this yet.
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func SetToSigFigs(num float64) float64 {
+	multiplier := math.Pow(10, 4) // currently just rounds to 4 decimals for now, sig figs are complex
+	return math.Round(num*multiplier) / multiplier
 }

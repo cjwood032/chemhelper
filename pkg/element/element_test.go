@@ -76,6 +76,7 @@ func TestFindElementBySymbol(t *testing.T){
 func newTestElement(number int, symbol string, name string, weight float64, en float64, radius float64, group int, period int, ) Element{
 	return Element{AtomicNumber: number, Symbol: symbol, Name: name, AtomicWeight: weight, Electronegativity: en, VanDerWaalsRadius: radius, Group: group, Period: period}
 }
+
 func checkElement(t *testing.T, expected Element, actual Element,) {
 	if actual != expected {
 		t.Errorf("Expected %s to equal %v, but got %v", expected.Name, expected, actual)
