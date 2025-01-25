@@ -3,7 +3,6 @@ package element
 import (
 	"fmt"
 	"log"
-	"math"
 )
 
 
@@ -167,9 +166,4 @@ func handleError(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-func SetToSigFigs(num float64) float64 {
-	multiplier := math.Pow(10, 4) // currently just rounds to 4 decimals for now, sig figs are complex
-	return math.Round(num*multiplier) / multiplier
 }

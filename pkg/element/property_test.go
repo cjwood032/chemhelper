@@ -43,7 +43,7 @@ var testCompounds = []struct {
 		},
 		Mass: Mass{value: 18.015}},
 		massForMoles: Mass{value: 50, prefix: none, unit: pound},
-		expectedMoles: 1258.9287,
+		expectedMoles: 1258.9286705523175,//this seems as precise as this can get, actual value is 1258.928670552317513
 		expectedError: false,
 	},
 	{
@@ -102,14 +102,14 @@ var testElementMoles = []struct {
 	},
 	{element: ElementMoles{
 		Element: Element{AtomicNumber: 8, Symbol: "O", Name: "Oxygen", AtomicWeight: 15.999}},
-		massForMoles: Mass{value: 0.006354604, unit: ounce, prefix: none},
-		expectedMoles: 0.0113,
+		massForMoles: Mass{value: 10, unit: ounce, prefix: none},
+		expectedMoles: 17.71923245202825,
 		expectedError: false,
 	},
 	{element: ElementMoles{
-		Element: Element{AtomicNumber: 211, Symbol: "XX", Name: "Baddium", AtomicWeight: 85501}},
-		massForMoles: Mass{value: 1, unit: pound, prefix: none},
-		expectedMoles: .0053,
+		Element: Element{AtomicNumber: 211, Symbol: "XX", Name: "Baddium", AtomicWeight: 453.592}},
+		massForMoles: Mass{value: 100, unit: pound, prefix: none},
+		expectedMoles: 100,
 		expectedError: false,
 	},
 	{element: ElementMoles{
@@ -119,6 +119,7 @@ var testElementMoles = []struct {
 		expectedError: false,
 	},
 }
+
 func TestConvertMassToStandard(t *testing.T) {	
 	tests:= []struct{
 		name		string
@@ -167,6 +168,22 @@ func TestConvertMassToStandard(t *testing.T) {
 			unit:           gram,
 			prefix:         milli,
 			expectedResult: 0.1,
+			expectedError:  false,
+		},
+		{
+			name:           "1 micrograms to grams",
+			value:          1,
+			unit:           gram,
+			prefix:         micro,
+			expectedResult: .000001,
+			expectedError:  false,
+		},
+		{
+			name:           "1000 pounds to grams",
+			value:          1000,
+			unit:           pound,
+			prefix:         none,
+			expectedResult: 453592,
 			expectedError:  false,
 		},
 		{
@@ -255,7 +272,7 @@ func TestMolesByMass(t *testing.T) {
 			if !test.expectedError && err!=nil {
 				t.Errorf("unexpected error")
 			}
-			actual := SetToSigFigs(test.compound.Moles)
+			actual := test.compound.Moles//SetToSigFigs(test.compound.Moles, 4)
 			if (actual != expected){
 				t.Errorf("Expected %v moles, but got %v", expected, actual)
 			}
@@ -275,7 +292,7 @@ func TestMoles(t *testing.T) {
 			if !test.expectedError && err!=nil {
 				t.Errorf("unexpected error")
 			}
-			actual := SetToSigFigs(test.compound.Moles)
+			actual := test.compound.Moles//SetToSigFigs(test.compound.Moles, 4)
 			if (actual != expected){
 				t.Errorf("Expected %v moles, but got %v", expected, actual)
 			}
@@ -285,6 +302,7 @@ func TestMoles(t *testing.T) {
 		})
 	}
 }
+
 func TestMolesOfElements(t *testing.T) {
 	for _, test := range testElementMoles {
 		t.Run(fmt.Sprintf("Testing Element:%s", test.element.Element.Symbol), func(t *testing.T) {
@@ -295,7 +313,7 @@ func TestMolesOfElements(t *testing.T) {
 			if !test.expectedError && err!=nil {
 				t.Errorf("unexpected error")
 			}
-			actual := SetToSigFigs(test.element.Moles)
+			actual := test.element.Moles//SetToSigFigs(test.element.Moles, 4)
 			if (actual != expected){
 				t.Errorf("Expected %v moles, but got %v", expected, actual)
 			}
