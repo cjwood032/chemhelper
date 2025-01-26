@@ -3,22 +3,22 @@ package element
 import (
 	"fmt"
 	"testing"
+
+	"github.com/shopspring/decimal"
 )
 
 // Simplified Periodic Table with only a few elements for testing.
 func NewTestPeriodicTable() *PeriodicTable {
 	return &PeriodicTable{
 		Elements: []Element{
-			{AtomicNumber: 1, Symbol: "H", Name: "Hydrogen", AtomicWeight: 1.008},
-			{AtomicNumber: 6, Symbol: "C", Name: "Carbon", AtomicWeight: 12.011},
-			{AtomicNumber: 8, Symbol: "O", Name: "Oxygen", AtomicWeight: 15.999},
-			{AtomicNumber: 11, Symbol: "Na", Name: "Sodium", AtomicWeight: 22.990},
-			{AtomicNumber: 17, Symbol: "Cl", Name: "Chlorine", AtomicWeight: 35.45},
+			{AtomicNumber: 1, Symbol: "H", Name: "Hydrogen", AtomicWeight: decimal.NewFromFloat(1.008)},
+			{AtomicNumber: 6, Symbol: "C", Name: "Carbon", AtomicWeight: decimal.NewFromFloat(12.011)},
+			{AtomicNumber: 8, Symbol: "O", Name: "Oxygen", AtomicWeight: decimal.NewFromFloat(15.999)},
+			{AtomicNumber: 11, Symbol: "Na", Name: "Sodium", AtomicWeight: decimal.NewFromFloat(22.990)},
+			{AtomicNumber: 17, Symbol: "Cl", Name: "Chlorine", AtomicWeight: decimal.NewFromFloat(35.45)},
 		},
 	}
 }
-
-
 
 func TestParseCompound(t *testing.T) {
 	pt := NewTestPeriodicTable()
@@ -41,8 +41,8 @@ func TestParseCompound(t *testing.T) {
 				sortElementMoles(test.compound.Elements)
 
 				for i, elem := range result {
-					if elem.Element.Symbol != test.compound.Elements[i].Element.Symbol || elem.Moles != test.compound.Elements[i].Moles {
-						t.Errorf("Expected ElementMoles {%s, %.2f}, but got {%s, %.2f}",
+					if elem.Element.Symbol != test.compound.Elements[i].Element.Symbol || !elem.Moles.Equal(test.compound.Elements[i].Moles) {
+						t.Errorf("Expected ElementMoles {%s, %v}, but got {%s, %v}",
 							test.compound.Elements[i].Element.Symbol, test.compound.Elements[i].Moles,
 							elem.Element.Symbol, elem.Moles)
 					}

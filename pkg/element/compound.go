@@ -5,11 +5,13 @@ import (
 	"regexp"
 	"sort"
 	"strconv"
+
+	"github.com/shopspring/decimal"
 )
 
 type ElementMoles struct { // when creating compounds. I could just have moles be part of the element struct, but this is less confusing when balancing equations.
 	Element Element
-	Moles float64
+	Moles decimal.Decimal
 }
 
 type Compound struct {
@@ -17,8 +19,8 @@ type Compound struct {
 	Elements []ElementMoles
 	Mass Mass
 	Volume Volume
-	MolarMass float64
-	Moles float64
+	MolarMass decimal.Decimal
+	Moles decimal.Decimal
 }
 // Orders by symbol
 func sortElementMoles(elements []ElementMoles) {
@@ -32,7 +34,7 @@ func ParseCompoundElements(compound string, pt *PeriodicTable) ([]ElementMoles, 
 	}
 	var elements []ElementMoles
 	re := regexp.MustCompile(`([A-Z][a-z]?)(\d*)`)
-	elementMolesMap := make(map[string]float64)
+	elementMolesMap := make(map[string]int64)
 	matches := re.FindAllStringSubmatch(compound, -1)
 
 	for _, match := range matches {
@@ -42,7 +44,7 @@ func ParseCompoundElements(compound string, pt *PeriodicTable) ([]ElementMoles, 
 		if count == "" {
 			count = "1"
 		}
-		moles, err := strconv.ParseFloat(count, 64)
+		moles, err := strconv.ParseInt(count, 10,0)
 		if err != nil {
 			return nil, err
 		}
@@ -55,7 +57,7 @@ func ParseCompoundElements(compound string, pt *PeriodicTable) ([]ElementMoles, 
 	}
 	for symbol, moles := range elementMolesMap {
 		element, _ := pt.FindElementBySymbol(symbol) // We know the element exists, so this is safe
-		elements = append(elements, ElementMoles{Element: *element, Moles: moles})
+		elements = append(elements, ElementMoles{Element: *element, Moles: decimal.NewFromInt(moles)})
 	}
 	return elements, nil
 }

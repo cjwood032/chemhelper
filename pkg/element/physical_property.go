@@ -3,6 +3,8 @@ package element
 import (
 	"fmt"
 	"log"
+
+	"github.com/shopspring/decimal"
 )
 
 
@@ -18,56 +20,46 @@ const (
 	milli Prefix = 0.001
 	micro Prefix = 0.000001
 )
-type MassUnit string
+
+type MassUnit float64
 
 const (
 	// Catch for things like Ton, and Slug
-	unknownMass MassUnit = "unknown"
+	unknownMass MassUnit = -1
 	//Metric
-	gram    MassUnit = "gram"
+	gram    MassUnit = 1
 	// Imperial
-	ounce   MassUnit = "ounce"
-	pound   MassUnit = "pound"
+	ounce   MassUnit = 28.349
+	pound   MassUnit = 453.592
 )
 
 type Mass struct {
-	value float64
+	value decimal.Decimal
 	unit  MassUnit
 	prefix Prefix
 }
 
 
 type Volume struct {
-	value float64
+	value decimal.Decimal
 	unit  Prefix 
 }
 
 type Property interface {
-	convertToStandard() (float64, error)
-	getMoles(float64) (float64, error)
+	convertToStandard() (decimal.Decimal, error)
+	getMoles(decimal.Decimal) (decimal.Decimal, error)
 }
 
-func convertToStandardValue(p Property) (float64, error) {
-	
+func convertToStandardValue(p Property) (decimal.Decimal, error) {
     return p.convertToStandard()
 }
 
-func (m Mass) convertToStandard() (float64, error) {	
-	
-	switch m.unit {
-	case pound:
-		return m.value * 453.592 * float64(m.prefix), nil
-	case ounce:
-		return m.value * 28.349 * float64(m.prefix), nil
-	case gram:
-		return m.value * float64(m.prefix), nil
-	default:
-		return 0, fmt.Errorf("unknown unit passed")
+func (m Mass) convertToStandard() (decimal.Decimal, error) {	
+		return m.value.Mul( decimal.NewFromFloat(float64(m.unit))).Mul(decimal.NewFromFloat(float64(m.prefix))), nil
 	}
-}
 
-func NewMass(value float64, options ...interface{}) (Mass, error) {
-	if value == 0 {
+func NewMass(value decimal.Decimal, options ...interface{}) (Mass, error) {
+	if value.Equal(decimal.Zero) {
 		return Mass{}, fmt.Errorf("no mass value passed")
 	}
 	mass := Mass{
@@ -90,38 +82,40 @@ func NewMass(value float64, options ...interface{}) (Mass, error) {
 	return mass, nil
 }
 
-
-func (v Volume) convertToStandard() (float64, error) {
-	return v.value * float64(v.unit), nil
+func (v Volume) convertToStandard() (decimal.Decimal, error) {
+	return v.value.Mul(decimal.NewFromFloat(float64(v.unit))), nil
 }
 
-func getMoles(p Property, value float64) (float64, error){
+func getMoles(p Property, value decimal.Decimal) (decimal.Decimal, error){
 	return p.getMoles(value)
 }
-func (m Mass) getMoles(molarMass float64) (float64,error) {
+
+func (m Mass) getMoles(molarMass decimal.Decimal) (decimal.Decimal, error) {
 	standardMass, err := m.convertToStandard()
 	if err != nil {
-		return 0, err
+		return decimal.Zero, err
 	}
-	return standardMass / molarMass, nil
+	return standardMass.Div(molarMass), nil
 }
-func (c *Compound) getMoles(mass float64) ( error) {
-	if mass ==0 {
+
+func (c *Compound) getMoles(mass decimal.Decimal) ( error) {
+	if mass .Equal(decimal.Zero) {
 		return fmt.Errorf("no mass passed")
 	}
-	if c.MolarMass == 0 {
+	if c.MolarMass .Equal(decimal.Zero) {
 		err := c.getMolarMass()
 		if (err != nil) {
 			return err
 		}	
 	}
-	c.Moles = mass/c.MolarMass
+	c.Moles = mass.Div(c.MolarMass)
 	return nil
 }
-func (v Volume) getMoles(molarity float64) (float64, error) {
+
+func (v Volume) getMoles(molarity decimal.Decimal) (decimal.Decimal, error) {
 	standardVol, err := v.convertToStandard()
 	handleError(err)
-	return standardVol * molarity, err
+	return standardVol.Mul(molarity), err
 }
 
 func (element *ElementMoles) getMoles(mass Mass) error {
@@ -135,7 +129,7 @@ func (element *ElementMoles) getMoles(mass Mass) error {
 }
 
 func (compound *Compound) getMolesFromMass(mass Mass) error {
-	if compound.MolarMass == 0 {
+	if compound.MolarMass .Equal(decimal.Zero) {
 		err := compound.getMolarMass()
 		if (err != nil) {
 			return err
@@ -153,9 +147,9 @@ func (compound *Compound) getMolarMass() error {
 	if len(compound.Elements) == 0 {
 		return fmt.Errorf("no elements passed")
 	}
-	totalMass := 0.0
+	var totalMass decimal.Decimal = decimal.Zero
 	for _, em := range compound.Elements {
-		totalMass += em.Element.AtomicWeight * em.Moles
+		totalMass = totalMass.Add(em.Element.AtomicWeight.Mul(em.Moles))
 	}
 	compound.MolarMass = totalMass
 	return nil

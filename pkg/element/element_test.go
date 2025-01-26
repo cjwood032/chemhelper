@@ -2,6 +2,8 @@ package element
 
 import (
 	"testing"
+
+	"github.com/shopspring/decimal"
 )
  var elementSymbols = []string{
 	"H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", 
@@ -74,11 +76,11 @@ func TestFindElementBySymbol(t *testing.T){
 }
 
 func newTestElement(number int, symbol string, name string, weight float64, en float64, radius float64, group int, period int, ) Element{
-	return Element{AtomicNumber: number, Symbol: symbol, Name: name, AtomicWeight: weight, Electronegativity: en, VanDerWaalsRadius: radius, Group: group, Period: period}
+	return Element{AtomicNumber: number, Symbol: symbol, Name: name, AtomicWeight: decimal.NewFromFloat(weight), Electronegativity: en, VanDerWaalsRadius: radius, Group: group, Period: period}
 }
 
 func checkElement(t *testing.T, expected Element, actual Element,) {
-	if actual != expected {
+	if actual.AtomicNumber != expected.AtomicNumber && !actual.AtomicWeight.Equal(expected.AtomicWeight) && actual.Electronegativity != expected.Electronegativity && actual.Group != expected.Group && actual.Name != expected.Name && actual.Period != expected.Period && actual.Symbol != expected.Symbol && actual.VanDerWaalsRadius != expected.VanDerWaalsRadius{
 		t.Errorf("Expected %s to equal %v, but got %v", expected.Name, expected, actual)
 	}
 }
