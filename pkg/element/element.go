@@ -140,6 +140,7 @@ func NewPeriodicTable() *PeriodicTable {
     }
     return &PeriodicTable{Elements:elements}
 }
+
 func (pt *PeriodicTable) FindElementBySymbol(symbol string) (*Element, bool) {
 	for _, elem := range pt.Elements {
 		if elem.Symbol == symbol {

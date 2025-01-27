@@ -9,19 +9,6 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-/*
-func SetToSigFigs(num float64, sigfig int) (float64,error) {
-	//to do, include the round to make even rule
-	if (sigfig < 0){
-		return 0, fmt.Errorf("significant figures cannot be negative")
-	}
-	scientific := strconv.FormatFloat(num, 'e', -1, 64)
-	multiplier := math.Pow(10, float64(sigfig))
-	v1 := num * multiplier
-	v2 := scientific
-	return math.Round(num*multiplier) / multiplier, nil
-}
-*/
 func SetToSigFigs(val float64, sigfig int32) (float64, error) {
 	num := decimal.NewFromFloat(val)
 	if sigfig < 1 {

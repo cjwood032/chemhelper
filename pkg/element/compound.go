@@ -28,6 +28,7 @@ func sortElementMoles(elements []ElementMoles) {
 		return elements[i].Element.Symbol < elements[j].Element.Symbol
 	})
 }
+
 func ParseCompoundElements(compound string, pt *PeriodicTable) ([]ElementMoles, error) {
 	if compound =="" {
 		return nil, fmt.Errorf("no compound symbols passed")
