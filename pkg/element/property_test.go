@@ -134,7 +134,7 @@ func TestConvertVolume(t *testing.T) {
 }
 
 func TestMolarMass(t *testing.T) {
-	for _, test := range testCompounds {
+	for _, test := range TestCompounds {
 		t.Run(fmt.Sprintf("Testing Compound:%s", test.compound.Symbol), func(t *testing.T) {
 			expected := test.compound.Mass.value
 			err := test.compound.getMolarMass()

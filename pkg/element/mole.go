@@ -33,8 +33,14 @@ func (c *Compound) getMoles(mass decimal.Decimal) ( error) {
 }
 
 func (v Volume) getMoles(molarity decimal.Decimal) (decimal.Decimal, error) {
+	zed := decimal.NewFromInt(0)
+	if molarity.LessThanOrEqual(zed) {
+		return zed, fmt.Errorf("molarity must be a nonzero, positive value, got %v ",molarity)
+	}
 	standardVol, err := v.convertToStandard()
-	handleError(err)
+	if err != nil {
+		return zed, err
+	}
 	return standardVol.Mul(molarity), err
 }
 

@@ -23,7 +23,7 @@ func NewTestPeriodicTable() *PeriodicTable {
 func TestParseCompound(t *testing.T) {
 	pt := NewTestPeriodicTable()
 
-	for _, test := range testCompounds { // test compounds were generated in property_test
+	for _, test := range TestCompounds { // test compounds were generated in property_test
 		t.Run(fmt.Sprintf("Testing Compound:%s", test.compound.Symbol), func(t *testing.T) {
 			result, err := ParseCompoundElements(test.compound.Symbol, pt)
 			if (err != nil) != test.expectedError {

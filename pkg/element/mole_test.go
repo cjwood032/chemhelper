@@ -11,7 +11,7 @@ import (
 // need to test get moles with combination of masses/volumes
 
 func TestMolesByMass(t *testing.T) {
-	for _, test := range testCompounds {
+	for _, test := range TestCompounds {
 		t.Run(fmt.Sprintf("Testing Compound:%s", test.compound.Symbol), func(t *testing.T) {
 			expected := test.expectedMoles
 			err := test.compound.getMolesFromMass(test.massForMoles)
@@ -29,8 +29,26 @@ func TestMolesByMass(t *testing.T) {
 	}
 }
 
+func TestMolesByVolume(t *testing.T) {
+	for _, test := range TestCompounds {
+		t.Run(fmt.Sprintf("Testing Compound:%s", test.compound.Symbol), func(t *testing.T) {
+			expected := test.expectedMoles
+			actualMoles, err := test.compound.Volume.getMoles(test.molarity)
+			if !test.expectedError && err!=nil {
+				t.Errorf("unexpected error")
+			}
+			if (!actualMoles.Equal(expected)){
+				t.Errorf("Expected %v moles, but got %v", expected, actualMoles)
+			}
+			if (test.expectedError && err == nil) {
+				t.Errorf("Expected error but got none")
+			}
+		})
+	}
+}
+
 func TestMoles(t *testing.T) {
-	for _, test := range testCompounds {
+	for _, test := range TestCompounds {
 		t.Run(fmt.Sprintf("Testing Compound:%s", test.compound.Symbol), func(t *testing.T) {
 			expected := test.expectedMoles
 			test.compound.MolarMass = test.compound.Mass.value
