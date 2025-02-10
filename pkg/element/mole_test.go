@@ -7,9 +7,6 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-// need volume moles
-// need to test get moles with combination of masses/volumes
-
 func TestMolesByMass(t *testing.T) {
 	for _, test := range TestCompounds {
 		t.Run(fmt.Sprintf("Testing Compound:%s", test.compound.Symbol), func(t *testing.T) {
@@ -47,7 +44,7 @@ func TestMolesByVolume(t *testing.T) {
 	}
 }
 
-func TestMoles(t *testing.T) {
+func TestMolesFromStandardMass(t *testing.T) {
 	for _, test := range TestCompounds {
 		t.Run(fmt.Sprintf("Testing Compound:%s", test.compound.Symbol), func(t *testing.T) {
 			expected := test.expectedMoles
@@ -68,6 +65,107 @@ func TestMoles(t *testing.T) {
 	}
 }
 
+func TestMolesOfProperty(t *testing.T) {
+	var testProperties = []struct {
+		name string
+		property Property
+		value decimal.Decimal
+		expectedMoles decimal.Decimal
+		expectedError bool
+	}{
+		{
+			name: "1 kg of 1g/mol",
+			property: Mass{value: decimal.NewFromInt(1),
+					unit: gram,
+					prefix: kilo,
+				 },
+			value: decimal.NewFromInt(1),
+			expectedMoles: decimal.NewFromInt(1000),
+			expectedError: false,
+		},
+		{
+			name: "1 kg of 10g/mol",
+			property: Mass{value: decimal.NewFromInt(1),
+					unit: gram,
+					prefix: kilo,
+				 },
+			value: decimal.NewFromInt(10),
+			expectedMoles: decimal.NewFromInt(100),
+			expectedError: false,
+		},
+		{
+			name: "1 lb of 1g/mol",
+			property: Mass{value: decimal.NewFromInt(1),
+					unit: pound,
+					prefix: none,
+				 },
+			value: decimal.NewFromInt(1),
+			expectedMoles: decimal.NewFromFloat(453.592),
+			expectedError: false,
+		},
+		{
+			name: "1 L of 1mol/L",
+			property: Volume{value: decimal.NewFromFloat(1), unit: none},
+			value: decimal.NewFromInt(1),
+			expectedMoles: decimal.NewFromFloat(1),
+			expectedError: false,
+		},
+		{
+			name: "1 mL of 10mol/L",
+			property: Volume{value: decimal.NewFromFloat(1), unit: milli},
+			value: decimal.NewFromInt(10),
+			expectedMoles: decimal.NewFromFloat(.01),
+			expectedError: false,
+		},
+		{
+			name: "10 L of 0.05mol/L",
+			property: Volume{value: decimal.NewFromFloat(10), unit: none},
+			value: decimal.NewFromFloat(0.05),
+			expectedMoles: decimal.NewFromFloat(0.5),
+			expectedError: false,
+		},
+		{
+			name: "1 μL of 1mol/L",
+			property: Volume{value: decimal.NewFromFloat(1), unit: micro},
+			value: decimal.NewFromInt(1),
+			expectedMoles: decimal.NewFromFloat(0.000001),
+			expectedError: false,
+		},
+		{
+			name: "0 molar mass throws error",
+			property: Mass{value: decimal.NewFromInt(1),
+					unit: gram,
+					prefix: kilo,
+				 },
+			value: decimal.NewFromInt(0),
+			expectedMoles: decimal.NewFromInt(0),
+			expectedError: true,
+		},
+		{
+			name: "0 molarity throws an error",
+			property: Volume{value: decimal.NewFromFloat(100), unit: kilo},
+			value: decimal.NewFromInt(0),
+			expectedMoles: decimal.NewFromFloat(0),
+			expectedError: true,
+		},
+	}
+	for _, testProperty := range testProperties {
+		t.Run(fmt.Sprintf("Testing Mass:%s", testProperty.name), func(t *testing.T) {
+			expected := testProperty.expectedMoles
+			actualMoles, err := getMoles(testProperty.property,testProperty.value)
+			if !testProperty.expectedError && err!=nil {
+				t.Errorf("unexpected error")
+			}
+			if (!actualMoles.Equal(expected)){
+				t.Errorf("Expected %v moles, but got %v", expected, actualMoles)
+			}
+			if (testProperty.expectedError && err == nil) {
+				t.Errorf("Expected error but got none")
+			}
+		})
+	}
+	
+}
 func TestMolesOfElements(t *testing.T) {
 	var preciseOMoles, _ = decimal.NewFromString("17.7192324520282518") //too precise for floats
 	var testElementMoles = []struct {

@@ -11,6 +11,9 @@ func getMoles(p Property, value decimal.Decimal) (decimal.Decimal, error){
 }
 
 func (m Mass) getMoles(molarMass decimal.Decimal) (decimal.Decimal, error) {
+	if molarMass.Equal(decimal.Zero){
+		return decimal.Zero, fmt.Errorf("no molar mass passed")
+	}
 	standardMass, err := m.convertToStandard()
 	if err != nil {
 		return decimal.Zero, err
@@ -19,10 +22,10 @@ func (m Mass) getMoles(molarMass decimal.Decimal) (decimal.Decimal, error) {
 }
 
 func (c *Compound) getMoles(mass decimal.Decimal) ( error) {
-	if mass .Equal(decimal.Zero) {
+	if mass.Equal(decimal.Zero) {
 		return fmt.Errorf("no mass passed")
 	}
-	if c.MolarMass .Equal(decimal.Zero) {
+	if c.MolarMass.Equal(decimal.Zero) {
 		err := c.getMolarMass()
 		if (err != nil) {
 			return err
@@ -55,7 +58,7 @@ func (element *ElementMoles) getMoles(mass Mass) error {
 }
 
 func (compound *Compound) getMolesFromMass(mass Mass) error {
-	if compound.MolarMass .Equal(decimal.Zero) {
+	if compound.MolarMass.Equal(decimal.Zero) {
 		err := compound.getMolarMass()
 		if (err != nil) {
 			return err
