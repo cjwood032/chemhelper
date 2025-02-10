@@ -148,6 +148,23 @@ func TestMolesOfProperty(t *testing.T) {
 			expectedMoles: decimal.NewFromFloat(0),
 			expectedError: true,
 		},
+		{
+			name: "0 mass throws error",
+			property: Mass{value: decimal.NewFromInt(0),
+					unit: gram,
+					prefix: kilo,
+				 },
+			value: decimal.NewFromInt(1),
+			expectedMoles: decimal.NewFromInt(0),
+			expectedError: true,
+		},
+		{
+			name: "0 volume throws an error",
+			property: Volume{value: decimal.NewFromFloat(0), unit: kilo},
+			value: decimal.NewFromInt(1),
+			expectedMoles: decimal.NewFromFloat(0),
+			expectedError: true,
+		},
 	}
 	for _, testProperty := range testProperties {
 		t.Run(fmt.Sprintf("Testing Mass:%s", testProperty.name), func(t *testing.T) {

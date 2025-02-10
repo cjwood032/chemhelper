@@ -54,9 +54,12 @@ func convertToStandardValue(p Property) (decimal.Decimal, error) {
     return p.convertToStandard()
 }
 
-func (m Mass) convertToStandard() (decimal.Decimal, error) {	
-		return m.value.Mul( decimal.NewFromFloat(float64(m.unit))).Mul(decimal.NewFromFloat(float64(m.prefix))), nil
-	}
+func (m Mass) convertToStandard() (decimal.Decimal, error) {
+	if m.value.Equal(decimal.Zero){
+		return decimal.Zero, fmt.Errorf("empty property passed")
+	}	
+	return m.value.Mul( decimal.NewFromFloat(float64(m.unit))).Mul(decimal.NewFromFloat(float64(m.prefix))), nil
+}
 
 func NewMass(value decimal.Decimal, options ...interface{}) (Mass, error) {
 	if value.Equal(decimal.Zero) {
@@ -83,6 +86,9 @@ func NewMass(value decimal.Decimal, options ...interface{}) (Mass, error) {
 }
 
 func (v Volume) convertToStandard() (decimal.Decimal, error) {
+	if v.value.Equal(decimal.Zero){
+		return decimal.Zero, fmt.Errorf("empty property passed")
+	}
 	return v.value.Mul(decimal.NewFromFloat(float64(v.unit))), nil
 }
 
