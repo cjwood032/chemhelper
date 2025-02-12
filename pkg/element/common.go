@@ -1,17 +1,8 @@
 package element
 
 import (
-	"log"
-
 	"github.com/shopspring/decimal"
 )
-
-func handleError(err error) {
-	//I don't really do anything with this yet.
-	if err != nil {
-		log.Fatal(err)
-	}
-}
 
 // Shared testing objects
 var preciseHOHMoles, _ =decimal.NewFromString("1258.9286705523175132") // floats are not precise enough
